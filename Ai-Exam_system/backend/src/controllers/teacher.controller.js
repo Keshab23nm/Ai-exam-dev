@@ -194,17 +194,15 @@ const mailOptions = {
    transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.error("Error sending email: ", error);
-        res.status(500).send("Error sending email");
-      } else {
-        console.log("Email sent: ", info.response);
-        res.send("Email sent successfully");
-      }
-    });
-
-
-    res.json({
-      message: "OTP generated successfully",
-      access,
+        // Using return to stop execution and prevent duplicate response
+        return res.status(500).json({ success: false, message: "Error sending email" });
+      } 
+      console.log("Email sent: ", info.response);
+      return res.json({
+        success: true,
+        message: "OTP generated and sent to email successfully",
+        access,
+      });
     });
 
   } catch (error) {
