@@ -11,6 +11,7 @@ import path from "path";
 
 import cookies from 'cookie-parser';
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Render/Vercel)
 // app.use((req, res, next) => {
 //   console.log(`${req.method} ${req.url}`);
 //   next();
@@ -23,7 +24,8 @@ app.use(cors({
       "http://localhost:80",
       "http://localhost:3000",
       "https://ai-exam-dev.vercel.app",
-      "https://ai-exam-77j5nnvko-keshab23nms-projects.vercel.app"
+      "https://ai-exam-77j5nnvko-keshab23nms-projects.vercel.app",
+      /\.vercel\.app$/ // Allow all vercel subdomains for previews
     ];
     if (!origin || allowed.indexOf(origin) !== -1) {
       callback(null, true);

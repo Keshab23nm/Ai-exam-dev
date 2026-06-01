@@ -130,15 +130,19 @@ export const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
+
+    // Production-ready cookie settings
+    const isProduction = process.env.NODE_ENV === "production";
+    
     res.cookie("token", token, { 
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", 
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: true, // Always true for cross-domain cookies
+      sameSite: "none", // Required for cross-domain cookies (Vercel to Render)
       maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
-// console.log("Login token:", token);
     res.json({
+      success: true,
       token,
       user,
     });
@@ -149,11 +153,10 @@ export const loginUser = async (req, res) => {
 
 
 export const logoutUser = async (req, res) => {
-
   res.clearCookie("token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", 
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: true, 
+    sameSite: "none",
   });
 
   res.json({ message: "Logged out successfully" });
