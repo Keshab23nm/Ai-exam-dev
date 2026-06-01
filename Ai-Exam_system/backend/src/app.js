@@ -22,7 +22,8 @@ app.use(cors({
       "http://localhost:5174",
       "http://localhost:80",
       "http://localhost:3000",
-      "https://ai-exam-dev.vercel.app"
+      "https://ai-exam-dev.vercel.app",
+      "https://ai-exam-77j5nnvko-keshab23nms-projects.vercel.app"
     ];
     if (!origin || allowed.indexOf(origin) !== -1) {
       callback(null, true);
