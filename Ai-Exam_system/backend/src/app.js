@@ -17,7 +17,7 @@ const app = express();
 // });
 app.use(cors({
   origin: function (origin, callback) {
-    const allowed = ["http://localhost:5173", "http://localhost:5174",'http://localhost:80',"http://localhost:3000","https://ai-exam-dev.vercel.app/"];
+    const allowed = ["http://localhost:5173", "http://localhost:5174",'http://localhost:80',"http://localhost:3000","https://ai-exam-dev.vercel.app"];
     if (!origin || allowed.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
