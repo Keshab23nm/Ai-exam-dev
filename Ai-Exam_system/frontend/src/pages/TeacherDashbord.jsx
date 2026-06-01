@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { authApi } from '../api/index';
+import { useAuth } from '../context/AuthContext';
 import TotalStudents from '../components/exams/TotalStudents';
 import ExamOtpGeneration from '../components/exams/ExamOtpGeneration';
 import TeacherManageExams from '../components/exams/TeacherManageExams';
@@ -19,31 +20,19 @@ const NAV_ITEMS = [
 ];
 
 const TeacherDashbord = () => {
+  const { user: teacherData, logout } = useAuth();
   const [activeTab, setActiveTab]     = useState('profile');
-  const [teacherData, setTeacherData] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await authApi.logout();
+      await logout();
       navigate('/login');
     } catch (error) {
       console.error('Failed to logout', error);
     }
   };
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await authApi.getMe();
-        setTeacherData(res.data.user || res.data);
-      } catch (error) {
-        console.error('Failed to fetch profile', error);
-      }
-    };
-    fetchProfile();
-  }, []);
 
   const handleTabChange = (id) => {
     setActiveTab(id);

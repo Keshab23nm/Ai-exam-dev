@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { authApi } from '../api/index';
+import { useAuth } from '../context/AuthContext';
 import ExamList from '../components/exams/ExamList';
 import StudentResults from '../components/exams/StudentResults';
 import StudentQR from '../components/StudentQR';
@@ -15,8 +16,8 @@ const NAV_ITEMS = [
 ];
 
 const StudentDashbord = () => {
+  const { user, logout } = useAuth();
   const [activeTab, setActiveTab]           = useState('profile');
-  const [user, setUser]                     = useState(null);
   const [attendanceHistory, setAttendanceHistory] = useState([]);
   const [selectedDate, setSelectedDate]     = useState('');
   const [sidebarOpen, setSidebarOpen]       = useState(false);
@@ -24,24 +25,12 @@ const StudentDashbord = () => {
 
   const handleLogout = async () => {
     try {
-      await authApi.logout();
+      await logout();
       navigate('/login');
     } catch (error) {
       console.error('Failed to logout', error);
     }
   };
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await authApi.getMe();
-        setUser(res.data.user || res.data);
-      } catch (error) {
-        console.error('Failed to fetch profile', error);
-      }
-    };
-    fetchProfile();
-  }, []);
 
   useEffect(() => {
     if (activeTab === 'attendance') {

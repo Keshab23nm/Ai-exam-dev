@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router';
 import heroBg from '../assets/pages2.jpg';
+import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
+  const { user } = useAuth();
   return (
     <div className="font-body bg-surface text-on-surface selection:bg-primary/20">
 
@@ -31,18 +33,29 @@ const Home = () => {
               Secure, Fast, and Reliable Exam Platform for the Modern Academic Landscape. Streamlining integrity and accessibility for global education.
             </p>
             <div className="flex flex-wrap gap-4 pt-2 sm:pt-4">
-              <Link
-                to="/login"
-                className="px-8 sm:px-12 py-4 sm:py-5 bg-white text-primary font-bold text-base sm:text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 active:translate-y-0"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                className="px-8 sm:px-12 py-4 sm:py-5 bg-white/10 backdrop-blur-md text-white font-bold text-base sm:text-lg rounded-lg border border-white/30 hover:bg-white/20 transition-all"
-              >
-                Register
-              </Link>
+              {user ? (
+                <Link
+                  to={user.role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard'}
+                  className="px-8 sm:px-12 py-4 sm:py-5 bg-white text-primary font-bold text-base sm:text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 active:translate-y-0"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="px-8 sm:px-12 py-4 sm:py-5 bg-white text-primary font-bold text-base sm:text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 active:translate-y-0"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="px-8 sm:px-12 py-4 sm:py-5 bg-white/10 backdrop-blur-md text-white font-bold text-base sm:text-lg rounded-lg border border-white/30 hover:bg-white/20 transition-all"
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 

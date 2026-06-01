@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
+  const { user, logout } = useAuth();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -61,22 +63,48 @@ const Navbar = () => {
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-4">
-          <Link
-            to="/login"
-            className="px-6 py-2.5 rounded-xl bg-primary text-white font-semibold shadow-lg shadow-primary/20 hover:scale-105 transition-all"
-          >
-            Login
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-4">
+              <Link
+                to={user.role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard'}
+                className="px-6 py-2.5 rounded-xl bg-primary text-white font-semibold shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+              >
+                Dashboard
+              </Link>
+              <button
+                onClick={logout}
+                className="text-slate-600 dark:text-slate-400 hover:text-rose-600 font-semibold transition-colors cursor-pointer"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="px-6 py-2.5 rounded-xl bg-primary text-white font-semibold shadow-lg shadow-primary/20 hover:scale-105 transition-all"
+            >
+              Login
+            </Link>
+          )}
         </div>
 
         {/* Mobile: hamburger + login */}
         <div className="flex md:hidden items-center gap-3">
-          <Link
-            to="/login"
-            className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-md shadow-primary/20"
-          >
-            Login
-          </Link>
+          {user ? (
+            <Link
+              to={user.role === 'teacher' ? '/teacher-dashboard' : '/student-dashboard'}
+              className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-md shadow-primary/20"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold shadow-md shadow-primary/20"
+            >
+              Login
+            </Link>
+          )}
           <button
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
