@@ -3,7 +3,7 @@ import axios from 'axios';
 // ============================================
 // BASE AXIOS CONFIGURATION
 // ============================================
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:2000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:2000/api' || 'https://ai-exam-dev.onrender.com/api';
 const API_ROOT_URL = API_BASE_URL.replace('/api', '');
 
 const api = axios.create({
