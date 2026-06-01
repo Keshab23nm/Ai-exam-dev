@@ -19,4 +19,4 @@ const ProtectedRoute = ({ allowedRoles = [] }) => {
 
 export default ProtectedRoute;
 
-export default ProtectedRoute;
+
