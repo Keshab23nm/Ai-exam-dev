@@ -3,14 +3,19 @@ import { examApi, paymentApi, API_ROOT_URL } from "../../api/index";
 
 const PaymentItem = ({ exam }) => {
   const [paymentStatus, setPaymentStatus] = useState(exam.paymentStatus || 'pending');
-  const [receiptPaymentId, setReceiptPaymentId] = useState(null);
+  const [receiptPaymentId, setReceiptPaymentId] = useState(exam.paymentId || null);
+  const [receiptUrl, setReceiptUrl] = useState(exam.receiptUrl || null);
 
   const handleDownloadReceipt = async () => {
+    if (receiptUrl) {
+      window.open(receiptUrl, "_blank");
+      return;
+    }
     if (!receiptPaymentId) return;
     try {
       const res = await paymentApi.getReceipt(receiptPaymentId);
       if (res.data.success && res.data.receiptUrl) {
-        window.open(API_ROOT_URL + res.data.receiptUrl, "_blank");
+        window.open(res.data.receiptUrl, "_blank");
       }
     } catch (error) {
       console.error("Error downloading receipt:", error);
@@ -46,7 +51,8 @@ const PaymentItem = ({ exam }) => {
         alert("Payment Successful");
 
         if (verifyRes.data.receiptUrl) {
-          window.open(API_ROOT_URL + verifyRes.data.receiptUrl);
+          setReceiptUrl(verifyRes.data.receiptUrl);
+          window.open(verifyRes.data.receiptUrl, "_blank");
         }
       }
     } catch (err) {
@@ -116,7 +122,7 @@ const PaymentItem = ({ exam }) => {
             <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
             Paid
           </span>
-          {receiptPaymentId && (
+          {(receiptPaymentId || receiptUrl) && (
             <button
               onClick={handleDownloadReceipt}
               className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg font-semibold border border-blue-200 hover:bg-blue-100 transition-colors shadow-sm"

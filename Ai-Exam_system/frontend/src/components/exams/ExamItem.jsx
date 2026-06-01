@@ -6,13 +6,18 @@ const ExamItem = ({ exam }) => {
   const [open, setOpen] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(exam.paymentStatus || 'pending'); // 'pending', 'paid', 'otp-generated'
   const [receiptPaymentId, setReceiptPaymentId] = useState(exam.paymentId || null);
+  const [receiptUrl, setReceiptUrl] = useState(exam.receiptUrl || null);
 
   const handleDownloadReceipt = async () => {
+    if (receiptUrl) {
+      window.open(receiptUrl, "_blank");
+      return;
+    }
     if (!receiptPaymentId) return;
     try {
       const res = await paymentApi.getReceipt(receiptPaymentId);
       if (res.data.success && res.data.receiptUrl) {
-        window.open(API_ROOT_URL + res.data.receiptUrl, "_blank");
+        window.open(res.data.receiptUrl, "_blank");
       }
     } catch (error) {
       console.error("Error downloading receipt:", error);
@@ -43,6 +48,9 @@ const ExamItem = ({ exam }) => {
               if (verifyRes.data.paymentId) {
                 setReceiptPaymentId(verifyRes.data.paymentId);
               }
+              if (verifyRes.data.receiptUrl) {
+                setReceiptUrl(verifyRes.data.receiptUrl);
+              }
             }
           },
           theme: { color: "#3399cc" }
@@ -55,12 +63,12 @@ const ExamItem = ({ exam }) => {
     }
   };
 
+
   const handleGenerateOtp = async () => {
     try {
       const res = await paymentApi.generateOtp({ examId: exam._id });
       if (res.data.success) {
         setPaymentStatus('otp-generated');
-        alert("OTP Generated successfully!");
       }
     } catch (error) {
        console.error("OTP Error", error);
@@ -87,31 +95,45 @@ const ExamItem = ({ exam }) => {
              {exam.description || "No description provided for this exam. Make sure you are ready before proceeding."}
           </p>
         </div>
-        
-        {paymentStatus === 'pending' ? (
-          <div className="flex flex-col items-center gap-2 mt-4 md:mt-0">
-            <button 
-              disabled
-              className="px-8 py-3 bg-red-600 text-white rounded-xl opacity-75 cursor-not-allowed font-semibold w-full whitespace-nowrap"
+
+        <div className="flex flex-col items-end gap-2">
+          {paymentStatus !== 'pending' && (receiptPaymentId || receiptUrl) && (
+            <button
+              onClick={handleDownloadReceipt}
+              className="flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg font-medium border border-green-200 hover:bg-green-100 transition-colors text-xs"
             >
-              Start Exam
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M7.5 12L12 16.5m0 0L16.5 12M12 16.5V3" />
+              </svg>
+              Receipt
             </button>
-          </div>
-        ) : (
-          <div className="flex flex-col md:flex-row items-center gap-3 mt-4 md:mt-0">
-            <button 
-              onClick={async () => {
-                if (paymentStatus === 'paid') {
-                  await handleGenerateOtp();
-                }
-                setOpen(true);
-              }}
-              className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 hover:shadow-lg font-semibold transition-all transform hover:-translate-y-0.5 w-full md:w-auto whitespace-nowrap h-full"
-            >
-              Start Exam
-            </button>
-          </div>
-        )}
+          )}
+          
+          {paymentStatus === 'pending' ? (
+            <div className="flex flex-col items-center gap-2 mt-4 md:mt-0">
+              <button 
+                onClick={handlePayment}
+                className="px-8 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 hover:shadow-lg font-semibold transition-all transform hover:-translate-y-0.5 w-full whitespace-nowrap"
+              >
+                Pay & Start
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col md:flex-row items-center gap-3 mt-4 md:mt-0">
+              <button 
+                onClick={async () => {
+                  if (paymentStatus === 'paid') {
+                    await handleGenerateOtp();
+                  }
+                  setOpen(true);
+                }}
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 hover:shadow-lg font-semibold transition-all transform hover:-translate-y-0.5 w-full md:w-auto whitespace-nowrap h-full"
+              >
+                Start Exam
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {open && <OtpModal exam={exam} onClose={() => setOpen(false)} />}

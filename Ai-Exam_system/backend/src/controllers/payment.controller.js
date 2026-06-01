@@ -5,7 +5,15 @@ import ExamOtp from '../models/ExamOtp.js';
 import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
+import ImageKit from 'imagekit';
 import { config } from '../config/config.js';
+
+const imagekit = new ImageKit({
+  publicKey: config.publicKey,
+  privateKey: config.privateKey,
+  urlEndpoint: config.urlEndpoint
+});
+
 let razorpayInstance = null;
 
 const getRazorpayInstance = () => {
@@ -65,13 +73,78 @@ export const verifyPayment = async (req, res) => {
           paymentId: razorpay_payment_id, 
           signature: razorpay_signature, 
           status: 'successful',
-          exam: examId // Ensure examId is updated/correlated if it wasn't during creation
+          exam: examId 
         },
         { new: true }
-      );
+      ).populate('user exam');
+
+      // Generate receipt automatically and upload to ImageKit
+      const doc = new PDFDocument();
+      const fileName = `receipt-${updatedPayment._id}.pdf`;
+      const chunks = [];
+      doc.on('data', (chunk) => chunks.push(chunk));
+
+      const uploadPromise = new Promise((resolve, reject) => {
+        doc.on('end', async () => {
+          try {
+            const buffer = Buffer.concat(chunks);
+            const response = await imagekit.upload({
+              file: buffer,
+              fileName: fileName,
+              folder: '/receipts',
+            });
+            resolve(response.url);
+          } catch (err) {
+            reject(err);
+          }
+        });
+        doc.on('error', reject);
+      });
+
+      // --- Receipt PDF Content ---
+      doc.fillColor('#333333').font('Helvetica-Bold').fontSize(24).text('EXAMI SYSTEM', { align: 'center', characterSpacing: 2 });
+      doc.moveDown(0.5);
+      doc.font('Helvetica').fontSize(14).fillColor('#666666').text('Official Payment Receipt', { align: 'center' });
+      doc.moveDown(2);
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor('#e5e7eb').lineWidth(2).stroke();
+      doc.moveDown(1.5);
+      const detailsY = doc.y;
+      doc.fontSize(12).fillColor('#374151');
+      doc.font('Helvetica').text('Date:', 50, detailsY);
+      doc.font('Helvetica-Bold').text(new Date(updatedPayment.createdAt).toLocaleString(), 150, detailsY);
+      doc.font('Helvetica').text('Transaction ID:', 50, detailsY + 25);
+      doc.font('Helvetica-Bold').text(updatedPayment.paymentId, 150, detailsY + 25);
+      doc.font('Helvetica').text('Payment Status:', 50, detailsY + 50);
+      doc.font('Helvetica-Bold').fillColor('#16a34a').text('SUCCESSFUL', 150, detailsY + 50);
+      doc.moveDown(4);
+      const boxTop = doc.y;
+      doc.rect(50, boxTop, 500, 140).fillOpacity(0.1).fillAndStroke('#3b82f6', '#cbd5e1');
+      doc.fillOpacity(1).fillColor('#1e293b');
+      const boxContentY = boxTop + 20;
+      doc.fontSize(14).font('Helvetica-Bold').text('Payment Details:', 70, boxContentY);
+      doc.fontSize(12).font('Helvetica').text('Student Name:', 70, boxContentY + 35);
+      doc.font('Helvetica-Bold').text(`${updatedPayment.user.name || updatedPayment.user._id}`, 200, boxContentY + 35);
+      doc.font('Helvetica').text('Exam Title:', 70, boxContentY + 65);
+      doc.font('Helvetica-Bold').text(`${updatedPayment.exam.title || updatedPayment.exam._id}`, 200, boxContentY + 65);
+      doc.font('Helvetica').text('Amount Paid:', 70, boxContentY + 95);
+      doc.fontSize(16).font('Helvetica-Bold').fillColor('#1e293b').text(`INR ${updatedPayment.amount}`, 200, boxContentY + 93);
+      doc.moveDown(6);
+      const footerY = doc.y + 40;
+      doc.moveTo(50, footerY).lineTo(550, footerY).strokeColor('#e5e7eb').lineWidth(1).stroke();
+      doc.fontSize(10).font('Helvetica').fillColor('#9ca3af').text('This is a computer-generated receipt and requires no physical signature.', 50, footerY + 15, { align: 'center' });
+      doc.end();
+
+      const receiptUrl = await uploadPromise;
+      updatedPayment.receiptPath = receiptUrl;
+      await updatedPayment.save();
       
-      console.log("Payment Verified Successfully for Order:", razorpay_order_id);
-      res.json({ success: true, message: 'Payment verified successfully', paymentId: updatedPayment._id });
+      console.log("Payment Verified & Receipt Uploaded:", receiptUrl);
+      res.json({ 
+        success: true, 
+        message: 'Payment verified successfully', 
+        paymentId: updatedPayment._id,
+        receiptUrl: receiptUrl
+      });
     } else {
       console.log("Invalid Signature for Order:", razorpay_order_id);
       res.status(400).json({ success: false, message: 'Invalid signature sent!' });
@@ -140,16 +213,34 @@ export const generateReceipt = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Payment receipt not found' });
     }
 
-    const doc = new PDFDocument();
-    const fileName = `receipt-${payment._id}.pdf`;
-    const receiptsDir = path.join(process.cwd(), 'public', 'receipts');
-
-    if (!fs.existsSync(receiptsDir)) {
-      fs.mkdirSync(receiptsDir, { recursive: true });
+    // If receipt already exists on ImageKit, return it
+    if (payment.receiptPath && payment.receiptPath.startsWith('http')) {
+      return res.json({ success: true, receiptUrl: payment.receiptPath });
     }
 
-    const filePath = path.join(receiptsDir, fileName);
-    doc.pipe(fs.createWriteStream(filePath));
+    const doc = new PDFDocument();
+    const fileName = `receipt-${payment._id}.pdf`;
+    
+    // Use a buffer to collect the PDF data for ImageKit upload
+    const chunks = [];
+    doc.on('data', (chunk) => chunks.push(chunk));
+    
+    const uploadToImageKit = new Promise((resolve, reject) => {
+      doc.on('end', async () => {
+        try {
+          const buffer = Buffer.concat(chunks);
+          const response = await imagekit.upload({
+            file: buffer,
+            fileName: fileName,
+            folder: '/receipts',
+          });
+          resolve(response.url);
+        } catch (err) {
+          reject(err);
+        }
+      });
+      doc.on('error', reject);
+    });
 
     // Header
     doc.fillColor('#333333')
@@ -215,11 +306,13 @@ export const generateReceipt = async (req, res) => {
 
     doc.end();
 
-    payment.receiptPath = `/receipts/${fileName}`;
+    const receiptUrl = await uploadToImageKit;
+    payment.receiptPath = receiptUrl;
     await payment.save();
 
     res.json({ success: true, receiptUrl: payment.receiptPath });
   } catch (error) {
+    console.error("Generate Receipt Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -30,7 +30,9 @@ export const getExamsForStudent = async (req, res) => {
         const examObj = exam.toObject();
 
         if (payment) {
-          examObj.paymentStatus = 'otp-generated';
+          examObj.paymentStatus = 'paid';
+          examObj.paymentId = payment._id;
+          examObj.receiptUrl = payment.receiptPath;
         } else {
           examObj.paymentStatus = 'pending';
         }
