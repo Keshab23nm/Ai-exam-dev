@@ -31,10 +31,10 @@ export const registerUser = async (req, res) => {
     });
 
     const mailOptions = {
-    from: config.OTP_EMAIL,
-    to: user.email,
-    subject: "🔐 Your Verification Code - ExamiSystem",
-    html: `
+      from: config.OTP_EMAIL,
+      to: user.email,
+      subject: "🔐 Your Verification Code - ExamiSystem",
+      html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <div style="background-color: #4F46E5; padding: 30px; text-align: center;">
           <h1 style="color: white; margin: 0; font-size: 28px; letter-spacing: 1px;">ExamiSystem</h1>
@@ -53,25 +53,25 @@ export const registerUser = async (req, res) => {
         </div>
       </div>
     `,
-  };
+    };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error("Error sending email: ", error);
-      res.status(500).send("Error sending email");
-    } else {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email: ", error);
+        return res.status(500).json({
+          message: "Error sending email",
+        });
+      }
+
       console.log("Email sent: ", info.response);
-      res.send("Email sent successfully");
-    }
-  });
+      console.log("Account OTP:", otp);
 
-    // TODO: send email (we add next step)
-    console.log("Account OTP:", otp);
-
-    res.json({
-      message: "Registered successfully. Check email for OTP.",
+      return res.status(200).json({
+        message: "Registered successfully. Check email for OTP.",
+      });
     });
   } catch (error) {
+    console.error("Registration error:", error);
     res.status(500).json({ message: error.message });
   }
 };
