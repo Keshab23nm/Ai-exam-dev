@@ -135,14 +135,10 @@ export const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-
-    // Production-ready cookie settings
-    const isProduction = process.env.NODE_ENV === "production";
-    
 res.cookie("token", token, { httpOnly: true });
 
+// console.log("Login token:", token);
     res.json({
-      success: true,
       token,
       user,
     });
