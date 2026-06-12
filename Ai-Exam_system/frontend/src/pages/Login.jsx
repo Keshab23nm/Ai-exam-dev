@@ -13,7 +13,7 @@ const Login = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
   };
-
+console.log("API URL:", import.meta.env.VITE_API_BASE_URL);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
