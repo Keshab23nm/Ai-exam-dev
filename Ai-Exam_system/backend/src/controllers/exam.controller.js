@@ -134,39 +134,33 @@ export const verifyExamOtp = async (req, res) => {
 export const getExamById = async (req, res) => {
   try {
     const exam = await Exam.findById(req.params.id);
-
-
     const userId = req.user._id;
-    // console.log('userId:', userId);
-    // console.log(exam.createdBy);
-   const seeuser = await user.find({
+
+    const seeuser = await user.find({
       _id: userId,
      role: "student",
     });
-// console.log('seeuser:', seeuser[0]._id);
-const userfind= await result.findOne({
-  userId,
 
-});
-const examfind= await result.findOne({
-  examId: req.params.id,
-});
-if(userfind && examfind){
-  return res.status(400).json({ message: "You have already submitted this exam" });
-}
+    if (!seeuser || seeuser.length === 0) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
 
-if (userId.toString() !== seeuser[0]._id.toString()) {
-  return res.status(401).json({ message: 'Unauthorized' });
-}
-// if(userId !== seeuser[0]._id){//  object comprision is not possible in mongoose we have to convert it to string before comparision
-//   console.log('Unauthorized access attempt by userId:', userId,seeuser[0]._id);
-//   return res.status(401).json({ message: 'Unauthorized' });
-// }
-    // if(!seeuser){
-    //   return res.status(401).json({ message: 'Unauthorized' });
-    // } 
+    if (userId.toString() !== seeuser[0]._id.toString()) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
     if (!exam) {
       return res.status(404).json({ message: "Exam not found" });
+    }
+
+    // Check if this specific student has already submitted THIS specific exam
+    const existingResult = await result.findOne({
+      userId,
+      examId: req.params.id,
+    });
+
+    if (existingResult) {
+      return res.status(400).json({ message: "You have already submitted this exam" });
     }
 
     // ❗ Do NOT send correctAnswer to frontend

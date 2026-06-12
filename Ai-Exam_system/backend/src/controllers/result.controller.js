@@ -33,23 +33,15 @@ export const submitExam = async (req, res) => {
 
 const access = await ExamAccess.findOne({ userId, examId });
 
-// Check access existance based on user and exam
-if (!access || !access.startedAt) {
-  return res.status(400).json({
-    message: "Exam not started properly",
-  });
-}
-
 const now = new Date();
 const durationMs = (exam.duration || 60) * 60 * 1000;
 
-// Remove the strict error checking so it allows standard submission
-// In production, you might just mark it as late instead of rejecting the entire request
-// if (now - access.startedAt > durationMs) {
-//   return res.status(400).json({
-//     message: "Time expired, exam auto-submitted",
-//   });
-// }
+// If no access record or startedAt is missing, allow submission but flag as potentially time-expired
+let isTimeExpired = false;
+if (access && access.startedAt && (now - access.startedAt > durationMs)) {
+  isTimeExpired = true;
+}
+
 
     // ✅ 4. Timer validation (IMPORTANT)
     // if (startedAt && exam.duration) {
@@ -65,12 +57,6 @@ const durationMs = (exam.duration || 60) * 60 * 1000;
     // }
 
     // ✅ 5. Initialize counters
-
-    let isTimeExpired = false;
-
-if (now - access.startedAt > durationMs) {
-  isTimeExpired = true;
-}
     let totalMarks = 0;
     let obtainedMarks = 0;
 

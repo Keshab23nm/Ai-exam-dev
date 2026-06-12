@@ -34,11 +34,12 @@ export const deleteStudent = async (req, res) => {
     const teacherClass = req.user.class;
     const student = await User.findById(req.params.id);
 
-    if (student.class !== teacherClass) {
-      return res.status(403).json({ message: "Not authorized to delete this student" });
-    }
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
+    }
+
+    if (student.class !== teacherClass) {
+      return res.status(403).json({ message: "Not authorized to delete this student" });
     }
 
     await student.deleteOne();

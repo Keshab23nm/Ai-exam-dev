@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { examApi, aiApi } from '../../api/index';
+import { teacherApi, aiApi } from '../../api/index';
 
 const TeacherManageExams = () => {
   const [exams, setExams] = useState([]);
@@ -21,8 +21,8 @@ const TeacherManageExams = () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await examApi.getAllExams();
-      setExams(res.data.exams || res.data || []);
+      const res = await teacherApi.getExams();
+      setExams(Array.isArray(res.data) ? res.data : res.data.exams || []);
     } catch (err) {
       console.error('Failed to fetch exams', err);
       setError('Failed to load exams');
