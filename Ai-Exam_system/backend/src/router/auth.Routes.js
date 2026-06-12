@@ -52,7 +52,6 @@ export default router;
 
 
 
-
 // router.post("/login", loginUser);
 // router.put("/approve/:id", approveStudent);
 // router.post("/verify", verifyUser);
