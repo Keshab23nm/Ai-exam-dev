@@ -135,9 +135,14 @@ export const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-res.cookie("token", token, { httpOnly: true });
 
-// console.log("Login token:", token);
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  maxAge: 86400000
+});
+console.log("Login token:", token);
     res.json({
       token,
       user,
