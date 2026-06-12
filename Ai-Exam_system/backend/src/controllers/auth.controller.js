@@ -139,12 +139,7 @@ export const loginUser = async (req, res) => {
     // Production-ready cookie settings
     const isProduction = process.env.NODE_ENV === "production";
     
-    res.cookie("token", token, { 
-      httpOnly: true,
-      secure: isProduction, // Only true in production
-      sameSite: isProduction ? "none" : "lax", // Lax for localhost, None for cross-domain prod
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
-    });
+res.cookie("token", token, { httpOnly: true });
 
     res.json({
       success: true,
