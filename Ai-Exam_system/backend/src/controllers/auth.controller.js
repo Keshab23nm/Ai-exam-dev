@@ -140,7 +140,8 @@ res.cookie("token", token, {
   httpOnly: true,
   secure: true,
   sameSite: "none",
-  maxAge: 86400000
+  maxAge: 24 * 60 * 60 * 1000,
+  path: "/"
 });
 console.log("Login token:", token);
     res.json({

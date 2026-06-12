@@ -16,38 +16,40 @@ import User from "../models/user.js";
 //   }
 // }
 
+export const user = async (req,res,next)=>{
 
-export const user = async (req, res, next) => {
-  console.log("All cookies:", req.cookies);
+  console.log("Cookies received:", req.cookies);
 
   const token = req.cookies.token;
 
   console.log("Token:", token);
 
-  if (!token) {
-    console.log("No token found");
-    return res.status(401).json({ message: "Unauthorized - no token" });
+  if(!token){
+    return res.status(401).json({
+      message:"Unauthorized no token"
+    });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log("Decoded JWT:", decoded);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
 
-    const user = await User.findById(decoded.id).select("-password");
+    console.log("Decoded:", decoded);
 
-    console.log("Database user:", user);
-
-    req.user = user;
+    req.user = await User.findById(decoded.id)
+      .select("-password");
 
     next();
 
-  } catch (error) {
-    console.log("JWT error:", error.message);
+  } catch(err){
+
+    console.log("JWT ERROR:", err);
 
     return res.status(401).json({
-      message: "Unauthorized",
-      error: error.message
+      message:"Invalid token"
     });
   }
 };
