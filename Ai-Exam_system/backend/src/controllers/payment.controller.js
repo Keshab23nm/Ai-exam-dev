@@ -54,8 +54,19 @@ export const createOrder = async (req, res) => {
       key_id: config.RAZORPAY_KEY_ID 
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+ console.error("CREATE ORDER ERROR");
+
+ console.error(error);
+
+ console.error(error.message);
+
+ console.error(error.stack);
+
+ return res.status(500).json({
+   success:false,
+   message:error.message
+ });
+}
 };
 
 export const verifyPayment = async (req, res) => {
