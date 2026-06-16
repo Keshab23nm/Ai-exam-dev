@@ -192,19 +192,32 @@ const mailOptions = {
     `,
   };
 
-   transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending email: ", error);
-        // Using return to stop execution and prevent duplicate response
-        return res.status(500).json({ success: false, message: "Error sending email" });
-      } 
-      console.log("Email sent: ", info.response);
-      return res.json({
-        success: true,
-        message: "OTP generated and sent to email successfully",
-        access,
-      });
-    });
+  try {
+
+
+  const info = await transporter.sendMail(mailOptions);
+
+  console.log("BREVO SMTP CONNECTED");
+
+  console.log("Email sent:", info.response);
+
+  console.log("Account OTP:", otp);
+
+  return res.status(200).json({
+    success: true,
+    message: "Registered successfully. Check email for OTP."
+  });
+
+} catch (error) {
+
+  console.error("Error sending email:", error);
+
+  return res.status(500).json({
+    success: false,
+    message: "Error sending email"
+  });
+
+}
 
   } catch (error) {
     console.error("Teacher OTP Generation Error:", error);
