@@ -151,7 +151,7 @@ export const generateExamOtp = async (req, res) => {
     });
 
 const mailOptions = {
-    from: config.OTP_EMAIL,
+    from: config.BREVO_EMAIL,
     to: student.email,
     subject: `📝 Exam Entrance Code: ${exam.title}`,
     html: `
