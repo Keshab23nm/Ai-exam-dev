@@ -60,21 +60,36 @@ export const registerUser = async (req, res) => {
     `,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending email: ", error);
-        return res.status(500).json({
-          message: "Error sending email",
-        });
-      }
+  try {
 
-      console.log("Email sent: ", info.response);
-      console.log("Account OTP:", otp);
+  await transporter.verify();
 
-      return res.status(200).json({
-        message: "Registered successfully. Check email for OTP.",
-      });
-    });
+  const info = await transporter.sendMail(mailOptions);
+
+  console.log("BREVO SMTP CONNECTED");
+
+  console.log("Email sent:", info.response);
+
+  console.log("Account OTP:", otp);
+
+  return res.status(200).json({
+    success: true,
+    message: "Registered successfully. Check email for OTP."
+  });
+
+} catch (error) {
+
+  console.error("Error sending email:", error);
+
+  return res.status(500).json({
+    success: false,
+    message: "Error sending email"
+  });
+
+}
+
+
+
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ message: error.message });
