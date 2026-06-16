@@ -1,36 +1,25 @@
-// import nodemailer from 'nodemailer';
-// import {config} from '../config/config.js';
-//  export const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     user: process.env.OTP_EMAIL,
-//     pass: process.env.OTP_PASSWORD,
-//   },
-// });
 
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
+dotenv.config();
+export const transporter =
+nodemailer.createTransport({
 
-// export const transporter = nodemailer.createTransport({
-//   service: "Gmail",
-//   host: "smtp.gmail.com",
-//   port: 465,
-//   secure: true,
-//   auth: {
-//     user: config.OTP_EMAIL, // the email you used to create app password
-//     pass: config.OTP_PASSWORD, // your generated app password
-//   },
-// });
+ host:"smtp-relay.brevo.com",
 
+ port:587,
 
-import nodemailer from 'nodemailer';
-import {config} from '../config/config.js';
-export const transporter = nodemailer.createTransport({
-  service: "Gmail",
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: config.OTP_EMAIL, // the email you used to create app password
-    pass: config.OTP_PASSWORD, // your generated app password
-  },
+ secure:false,
+
+ auth:{
+   user:process.env.BREVO_EMAIL,
+   pass:process.env.BREVO_SMTP_KEY
+ },
+
+ connectionTimeout:30000,
+
+ greetingTimeout:30000,
+
+ socketTimeout:30000
 });
