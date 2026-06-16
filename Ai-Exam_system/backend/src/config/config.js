@@ -12,9 +12,9 @@ dotenv.config();
   urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
   RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID, // Add here
   RAZORPAY_SECRET: process.env.RAZORPAY_SECRET, // Add here
-
   BREVO_EMAIL: process.env.BREVO_EMAIL, // Add here
   BREVO_SMTP_KEY: process.env.BREVO_SMTP_KEY, // Add here
+  BREVO_LOGIN: process.env.BREVO_LOGIN, // Add here
 }
 
 // console.log(process.env.GEMINI_API_KEY)

@@ -36,7 +36,7 @@ export const registerUser = async (req, res) => {
     });
 
     const mailOptions = {
-      from: config.OTP_EMAIL,
+      from: config.BREVO_EMAIL,
       to: user.email,
       subject: "🔐 Your Verification Code - ExamiSystem",
       html: `
