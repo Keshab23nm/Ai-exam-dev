@@ -62,7 +62,6 @@ export const registerUser = async (req, res) => {
 
   try {
 
-  await transporter.verify();
 
   const info = await transporter.sendMail(mailOptions);
 
