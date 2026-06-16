@@ -1,8 +1,6 @@
 
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { config } from "../config/config.js";
 export const transporter =
 nodemailer.createTransport({
 
@@ -13,8 +11,8 @@ nodemailer.createTransport({
  secure:false,
 
  auth:{
-   user:process.env.BREVO_EMAIL,
-   pass:process.env.BREVO_SMTP_KEY
+   user:config.BREVO_EMAIL,
+   pass:config.BREVO_SMTP_KEY
  },
 
  connectionTimeout:30000,
